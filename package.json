@@ -1,12 +1,12 @@
 {
-  "name": "telegram-ipa-bot",
+  "name": "telegram-phonetic-bot",
   "version": "1.0.0",
-  "description": "Telegram bot with accurate IPA transcription",
+  "description": "Telegram bot with accurate phonetic transcription",
   "main": "bot.py",
   "scripts": {
     "start": "python bot.py"
   },
-  "keywords": ["telegram", "bot", "ipa", "pronunciation", "phonetic"],
+  "keywords": ["telegram", "bot", "phonetic", "pronunciation", "g2p"],
   "author": "Your Name",
   "license": "MIT"
 }
