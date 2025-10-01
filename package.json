@@ -1,7 +1,12 @@
 {
-  "name": "telegram-bot",
+  "name": "telegram-pronunciation-bot",
   "version": "1.0.0",
+  "description": "Telegram bot for English pronunciation and translation",
+  "main": "bot.py",
   "scripts": {
     "start": "python bot.py"
-  }
+  },
+  "keywords": ["telegram", "bot", "pronunciation", "translation"],
+  "author": "Your Name",
+  "license": "MIT"
 }
