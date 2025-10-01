@@ -1,1 +1,2 @@
 python-telegram-bot==20.7
+eng-to-ipa==1.0.2
