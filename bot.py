@@ -258,9 +258,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
 🔤 **Слово:** `{user_message}`
 🔊 **Вимова:** `{pronunciation}`
 🌐 **Переклад:** `{translation}`
-📝 **Метод:** {method}
-
-💡 *Працює на Railway 24/7!*
+*
     """
     
     await update.message.reply_text(response)
