@@ -12,129 +12,135 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-# Спробуємо імпортувати eng-to-ipa
+# Спробуємо імпортувати g2p-en для точної транскрипції
 try:
-    import eng_to_ipa as ipa
-    IPA_AVAILABLE = True
-    logger.info("✅ eng-to-ipa успішно імпортовано")
+    from g2p_en import G2p
+    G2P_AVAILABLE = True
+    g2p = G2p()
+    logger.info("✅ g2p-en успішно імпортовано")
 except ImportError as e:
-    IPA_AVAILABLE = False
-    logger.error(f"❌ eng-to-ipa не встановлено: {e}")
+    G2P_AVAILABLE = False
+    logger.error(f"❌ g2p-en не встановлено: {e}")
 
 # Велика база даних з транскрипцією та перекладом
 WORD_DATABASE = {
     # Популярні слова
-    'hello': {'pronunciation': 'хелоу', 'translation': 'привіт', 'ipa': 'həˈloʊ'},
-    'thanks': {'pronunciation': 'сенкс', 'translation': 'дякую', 'ipa': 'θæŋks'},
-    'please': {'pronunciation': 'пліз', 'translation': 'будь ласка', 'ipa': 'pliz'},
-    'sorry': {'pronunciation': 'сорі', 'translation': 'вибач', 'ipa': 'ˈsɑri'},
-    'yes': {'pronunciation': 'ес', 'translation': 'так', 'ipa': 'jɛs'},
-    'no': {'pronunciation': 'ноу', 'translation': 'ні', 'ipa': 'noʊ'},
-    'goodbye': {'pronunciation': 'гудбай', 'translation': 'до побачення', 'ipa': 'ɡʊdˈbaɪ'},
+    'hello': {'pronunciation': 'хелоу', 'translation': 'привіт', 'phonemes': 'h ə l ˈoʊ'},
+    'thanks': {'pronunciation': 'сенкс', 'translation': 'дякую', 'phonemes': 'θ æ ŋ k s'},
+    'thank you': {'pronunciation': 'сенк ю', 'translation': 'дякую', 'phonemes': 'θ æ ŋ k j u'},
+    'please': {'pronunciation': 'пліз', 'translation': 'будь ласка', 'phonemes': 'p l i z'},
+    'sorry': {'pronunciation': 'сорі', 'translation': 'вибач', 'phonemes': 'ˈs ɑ r i'},
+    'yes': {'pronunciation': 'ес', 'translation': 'так', 'phonemes': 'j ɛ s'},
+    'no': {'pronunciation': 'ноу', 'translation': 'ні', 'phonemes': 'n oʊ'},
+    'goodbye': {'pronunciation': 'гудбай', 'translation': 'до побачення', 'phonemes': 'ɡ ʊ d ˈb aɪ'},
     
     # Числа
-    'one': {'pronunciation': 'ван', 'translation': 'один', 'ipa': 'wʌn'},
-    'two': {'pronunciation': 'ту', 'translation': 'два', 'ipa': 'tu'},
-    'three': {'pronunciation': 'срі', 'translation': 'три', 'ipa': 'θri'},
-    'four': {'pronunciation': 'фор', 'translation': 'чотири', 'ipa': 'fɔr'},
-    'five': {'pronunciation': 'файв', 'translation': 'п\'ять', 'ipa': 'faɪv'},
-    'six': {'pronunciation': 'сікс', 'translation': 'шість', 'ipa': 'sɪks'},
-    'seven': {'pronunciation': 'севен', 'translation': 'сім', 'ipa': 'ˈsɛvən'},
-    'eight': {'pronunciation': 'ейт', 'translation': 'вісім', 'ipa': 'eɪt'},
-    'nine': {'pronunciation': 'найн', 'translation': 'дев\'ять', 'ipa': 'naɪn'},
-    'ten': {'pronunciation': 'тен', 'translation': 'десять', 'ipa': 'tɛn'},
+    'one': {'pronunciation': 'ван', 'translation': 'один', 'phonemes': 'w ʌ n'},
+    'two': {'pronunciation': 'ту', 'translation': 'два', 'phonemes': 't u'},
+    'three': {'pronunciation': 'срі', 'translation': 'три', 'phonemes': 'θ r i'},
+    'four': {'pronunciation': 'фор', 'translation': 'чотири', 'phonemes': 'f ɔ r'},
+    'five': {'pronunciation': 'файв', 'translation': 'п\'ять', 'phonemes': 'f aɪ v'},
+    'six': {'pronunciation': 'сікс', 'translation': 'шість', 'phonemes': 's ɪ k s'},
+    'seven': {'pronunciation': 'севен', 'translation': 'сім', 'phonemes': 'ˈs ɛ v ə n'},
+    'eight': {'pronunciation': 'ейт', 'translation': 'вісім', 'phonemes': 'eɪ t'},
+    'nine': {'pronunciation': 'найн', 'translation': 'дев\'ять', 'phonemes': 'n aɪ n'},
+    'ten': {'pronunciation': 'тен', 'translation': 'десять', 'phonemes': 't ɛ n'},
     
     # Кольори
-    'red': {'pronunciation': 'ред', 'translation': 'червоний', 'ipa': 'rɛd'},
-    'blue': {'pronunciation': 'блу', 'translation': 'синій', 'ipa': 'blu'},
-    'green': {'pronunciation': 'грін', 'translation': 'зелений', 'ipa': 'ɡrin'},
-    'yellow': {'pronunciation': 'елоу', 'translation': 'жовтий', 'ipa': 'ˈjɛloʊ'},
-    'black': {'pronunciation': 'блек', 'translation': 'чорний', 'ipa': 'blæk'},
-    'white': {'pronunciation': 'вайт', 'translation': 'білий', 'ipa': 'waɪt'},
+    'red': {'pronunciation': 'ред', 'translation': 'червоний', 'phonemes': 'r ɛ d'},
+    'blue': {'pronunciation': 'блу', 'translation': 'синій', 'phonemes': 'b l u'},
+    'green': {'pronunciation': 'грін', 'translation': 'зелений', 'phonemes': 'ɡ r i n'},
+    'yellow': {'pronunciation': 'елоу', 'translation': 'жовтий', 'phonemes': 'ˈj ɛ l oʊ'},
+    'black': {'pronunciation': 'блек', 'translation': 'чорний', 'phonemes': 'b l æ k'},
+    'white': {'pronunciation': 'вайт', 'translation': 'білий', 'phonemes': 'w aɪ t'},
     
     # Сім'я
-    'family': {'pronunciation': 'фемілі', 'translation': 'родина', 'ipa': 'ˈfæməli'},
-    'mother': {'pronunciation': 'мазер', 'translation': 'мати', 'ipa': 'ˈmʌðər'},
-    'father': {'pronunciation': 'фазер', 'translation': 'батько', 'ipa': 'ˈfɑðər'},
-    'brother': {'pronunciation': 'бразер', 'translation': 'брат', 'ipa': 'ˈbrʌðər'},
-    'sister': {'pronunciation': 'сістер', 'translation': 'сестра', 'ipa': 'ˈsɪstər'},
-    'child': {'pronunciation': 'чайлд', 'translation': 'дитина', 'ipa': 'tʃaɪld'},
-    'man': {'pronunciation': 'мен', 'translation': 'чоловік', 'ipa': 'mæn'},
-    'woman': {'pronunciation': 'вумен', 'translation': 'жінка', 'ipa': 'ˈwʊmən'},
+    'family': {'pronunciation': 'фемілі', 'translation': 'родина', 'phonemes': 'ˈf æ m ə l i'},
+    'mother': {'pronunciation': 'мазер', 'translation': 'мати', 'phonemes': 'ˈm ʌ ð ər'},
+    'father': {'pronunciation': 'фазер', 'translation': 'батько', 'phonemes': 'ˈf ɑ ð ər'},
+    'brother': {'pronunciation': 'бразер', 'translation': 'брат', 'phonemes': 'ˈb r ʌ ð ər'},
+    'sister': {'pronunciation': 'сістер', 'translation': 'сестра', 'phonemes': 'ˈs ɪ s t ər'},
+    'child': {'pronunciation': 'чайлд', 'translation': 'дитина', 'phonemes': 'tʃ aɪ l d'},
+    'man': {'pronunciation': 'мен', 'translation': 'чоловік', 'phonemes': 'm æ n'},
+    'woman': {'pronunciation': 'вумен', 'translation': 'жінка', 'phonemes': 'ˈw ʊ m ə n'},
     
     # Їжа
-    'apple': {'pronunciation': 'еппл', 'translation': 'яблуко', 'ipa': 'ˈæpəl'},
-    'banana': {'pronunciation': 'банана', 'translation': 'банан', 'ipa': 'bəˈnænə'},
-    'orange': {'pronunciation': 'орендж', 'translation': 'апельсин', 'ipa': 'ˈɔrɪndʒ'},
-    'water': {'pronunciation': 'вотер', 'translation': 'вода', 'ipa': 'ˈwɔtər'},
-    'food': {'pronunciation': 'фуд', 'translation': 'їжа', 'ipa': 'fud'},
-    'bread': {'pronunciation': 'бред', 'translation': 'хліб', 'ipa': 'brɛd'},
-    'milk': {'pronunciation': 'мілк', 'translation': 'молоко', 'ipa': 'mɪlk'},
-    'coffee': {'pronunciation': 'кофі', 'translation': 'кава', 'ipa': 'ˈkɔfi'},
-    'tea': {'pronunciation': 'ті', 'translation': 'чай', 'ipa': 'ti'},
+    'apple': {'pronunciation': 'еппл', 'translation': 'яблуко', 'phonemes': 'ˈæ p ə l'},
+    'banana': {'pronunciation': 'банана', 'translation': 'банан', 'phonemes': 'b ə ˈn æ n ə'},
+    'orange': {'pronunciation': 'орендж', 'translation': 'апельсин', 'phonemes': 'ˈɔ r ɪ n dʒ'},
+    'water': {'pronunciation': 'вотер', 'translation': 'вода', 'phonemes': 'ˈw ɔ t ər'},
+    'food': {'pronunciation': 'фуд', 'translation': 'їжа', 'phonemes': 'f u d'},
+    'bread': {'pronunciation': 'бред', 'translation': 'хліб', 'phonemes': 'b r ɛ d'},
+    'milk': {'pronunciation': 'мілк', 'translation': 'молоко', 'phonemes': 'm ɪ l k'},
+    'coffee': {'pronunciation': 'кофі', 'translation': 'кава', 'phonemes': 'ˈk ɔ f i'},
+    'tea': {'pronunciation': 'ті', 'translation': 'чай', 'phonemes': 't i'},
     
     # Тварини
-    'cat': {'pronunciation': 'кет', 'translation': 'кіт', 'ipa': 'kæt'},
-    'dog': {'pronunciation': 'дог', 'translation': 'собака', 'ipa': 'dɔɡ'},
-    'bird': {'pronunciation': 'берд', 'translation': 'птах', 'ipa': 'bɜrd'},
-    'fish': {'pronunciation': 'фіш', 'translation': 'риба', 'ipa': 'fɪʃ'},
-    'horse': {'pronunciation': 'хорс', 'translation': 'кінь', 'ipa': 'hɔrs'},
+    'cat': {'pronunciation': 'кет', 'translation': 'кіт', 'phonemes': 'k æ t'},
+    'dog': {'pronunciation': 'дог', 'translation': 'собака', 'phonemes': 'd ɔ ɡ'},
+    'bird': {'pronunciation': 'берд', 'translation': 'птах', 'phonemes': 'b ɜ r d'},
+    'fish': {'pronunciation': 'фіш', 'translation': 'риба', 'phonemes': 'f ɪ ʃ'},
+    'horse': {'pronunciation': 'хорс', 'translation': 'кінь', 'phonemes': 'h ɔ r s'},
     
     # Будинок
-    'house': {'pronunciation': 'хаус', 'translation': 'будинок', 'ipa': 'haʊs'},
-    'home': {'pronunciation': 'хоум', 'translation': 'дім', 'ipa': 'hoʊm'},
-    'room': {'pronunciation': 'рум', 'translation': 'кімната', 'ipa': 'rum'},
-    'door': {'pronunciation': 'дор', 'translation': 'двері', 'ipa': 'dɔr'},
-    'window': {'pronunciation': 'віндоу', 'translation': 'вікно', 'ipa': 'ˈwɪndoʊ'},
+    'house': {'pronunciation': 'хаус', 'translation': 'будинок', 'phonemes': 'h aʊ s'},
+    'home': {'pronunciation': 'хоум', 'translation': 'дім', 'phonemes': 'h oʊ m'},
+    'room': {'pronunciation': 'рум', 'translation': 'кімната', 'phonemes': 'r u m'},
+    'door': {'pronunciation': 'дор', 'translation': 'двері', 'phonemes': 'd ɔ r'},
+    'window': {'pronunciation': 'віндоу', 'translation': 'вікно', 'phonemes': 'ˈw ɪ n d oʊ'},
     
     # Додаткові слова
-    'computer': {'pronunciation': 'комп\'ютер', 'translation': 'комп\'ютер', 'ipa': 'kəmˈpjutər'},
-    'phone': {'pronunciation': 'фон', 'translation': 'телефон', 'ipa': 'foʊn'},
-    'book': {'pronunciation': 'бук', 'translation': 'книга', 'ipa': 'bʊk'},
-    'friend': {'pronunciation': 'френд', 'translation': 'друг', 'ipa': 'frɛnd'},
-    'time': {'pronunciation': 'тайм', 'translation': 'час', 'ipa': 'taɪm'},
-    'love': {'pronunciation': 'лав', 'translation': 'кохати', 'ipa': 'lʌv'},
-    'school': {'pronunciation': 'скул', 'translation': 'школа', 'ipa': 'skul'},
-    'work': {'pronunciation': 'ворк', 'translation': 'робота', 'ipa': 'wɜrk'},
-    'city': {'pronunciation': 'сіті', 'translation': 'місто', 'ipa': 'ˈsɪti'},
-    'world': {'pronunciation': 'ворлд', 'translation': 'світ', 'ipa': 'wɜrld'},
+    'computer': {'pronunciation': 'комп\'ютер', 'translation': 'комп\'ютер', 'phonemes': 'k ə m ˈp j u t ər'},
+    'phone': {'pronunciation': 'фон', 'translation': 'телефон', 'phonemes': 'f oʊ n'},
+    'book': {'pronunciation': 'бук', 'translation': 'книга', 'phonemes': 'b ʊ k'},
+    'friend': {'pronunciation': 'френд', 'translation': 'друг', 'phonemes': 'f r ɛ n d'},
+    'time': {'pronunciation': 'тайм', 'translation': 'час', 'phonemes': 't aɪ m'},
+    'love': {'pronunciation': 'лав', 'translation': 'кохати', 'phonemes': 'l ʌ v'},
+    'school': {'pronunciation': 'скул', 'translation': 'школа', 'phonemes': 's k u l'},
+    'work': {'pronunciation': 'ворк', 'translation': 'робота', 'phonemes': 'w ɜ r k'},
+    'city': {'pronunciation': 'сіті', 'translation': 'місто', 'phonemes': 'ˈs ɪ t i'},
+    'world': {'pronunciation': 'ворлд', 'translation': 'світ', 'phonemes': 'w ɜ r l d'},
+    'beautiful': {'pronunciation': 'б\'ютіфул', 'translation': 'красивий', 'phonemes': 'ˈb j u t ɪ f ʊ l'},
+    'answer': {'pronunciation': 'енсер', 'translation': 'відповідь', 'phonemes': 'ˈæ n s ər'},
+    'question': {'pronunciation': 'квесчен', 'translation': 'питання', 'phonemes': 'ˈk w ɛ s tʃ ən'},
+    'water': {'pronunciation': 'вотер', 'translation': 'вода', 'phonemes': 'ˈw ɔ t ər'},
+    'people': {'pronunciation': 'піпл', 'translation': 'люди', 'phonemes': 'ˈp i p əl'},
+    'because': {'pronunciation': 'бікоз', 'translation': 'тому що', 'phonemes': 'b ɪ ˈk ɔ z'},
 }
 
 def get_accurate_pronunciation(word):
-    """Отримує точну транскрипцію через IPA"""
+    """Отримує точну транскрипцію через g2p-en"""
     word_lower = word.lower()
     
     # Спочатку шукаємо в нашій базі даних
     if word_lower in WORD_DATABASE:
         data = WORD_DATABASE[word_lower]
-        return data['pronunciation'], data['translation'], data['ipa'], "база даних"
+        return data['pronunciation'], data['translation'], data['phonemes'], "база даних"
     
-    # Спробуємо використати eng-to-ipa для точного IPA
-    ipa_transcription = ""
-    if IPA_AVAILABLE:
+    # Спробуємо використати g2p-en для точної фонетичної транскрипції
+    phonemes_text = ""
+    if G2P_AVAILABLE:
         try:
-            ipa_result = ipa.convert(word_lower)
-            if ipa_result and ipa_result != word_lower:
-                ipa_transcription = ipa_result
-                # Конвертуємо IPA в кириличну транскрипцію
-                cyrillic = ipa_to_cyrillic(ipa_transcription)
-                return cyrillic, "переклад не знайдено", ipa_transcription, "IPA транскрипція"
+            phonemes = g2p(word_lower)
+            phonemes_text = ' '.join(phonemes)
+            # Конвертуємо фонеми в кириличну транскрипцію
+            cyrillic = phonemes_to_cyrillic(phonemes)
+            return cyrillic, "переклад не знайдено", phonemes_text, "фонетична транскрипція"
         except Exception as e:
-            logger.error(f"Помилка IPA конвертації: {e}")
+            logger.error(f"Помилка g2p конвертації: {e}")
     
-    # Якщо IPA не спрацював - використовуємо автоматичну транскрипцію
+    # Якщо g2p не спрацював - використовуємо автоматичну транскрипцію
     auto_pronunciation = auto_transcribe(word_lower)
     return auto_pronunciation, "переклад не знайдено", "", "автоматична транскрипція"
 
-def ipa_to_cyrillic(ipa_text):
-    """Конвертує IPA транскрипцію в кириличну"""
-    # Словник для конвертації IPA в кирилицю
-    ipa_to_cyr = {
+def phonemes_to_cyrillic(phonemes):
+    """Конвертує фонеми в кириличну транскрипцію"""
+    # Словник для конвертації фонем в кирилицю
+    phoneme_to_cyr = {
         # Голосні
         'æ': 'е', 'ɑ': 'а', 'ɔ': 'о', 'ə': 'е', 'ʌ': 'а', 'ɛ': 'е',
         'ɪ': 'і', 'i': 'і', 'ʊ': 'у', 'u': 'у', 
         'aɪ': 'ай', 'aʊ': 'ау', 'eɪ': 'ей', 'oʊ': 'оу', 'ɔɪ': 'ой',
-        'ɪə': 'іе', 'eə': 'ее', 'ʊə': 'уе',
         
         # Приголосні
         'b': 'б', 'd': 'д', 'f': 'ф', 'g': 'г', 'h': 'х', 'j': 'й',
@@ -146,40 +152,60 @@ def ipa_to_cyrillic(ipa_text):
         'ˈ': '', 'ˌ': '', ':': ''
     }
     
-    result = ipa_text
+    # Об'єднуємо фонеми в строку для обробки
+    phoneme_str = ''.join(phonemes)
     
     # Спочатку обробляємо дифтонги та сполучення
-    combinations = ['aɪ', 'aʊ', 'eɪ', 'oʊ', 'ɔɪ', 'ɪə', 'eə', 'ʊə', 'tʃ', 'dʒ']
+    combinations = ['aɪ', 'aʊ', 'eɪ', 'oʊ', 'ɔɪ', 'tʃ', 'dʒ']
     for combo in combinations:
-        if combo in result:
-            result = result.replace(combo, ipa_to_cyr.get(combo, combo))
+        if combo in phoneme_str:
+            phoneme_str = phoneme_str.replace(combo, phoneme_to_cyr.get(combo, combo))
     
     # Потім окремі символи
-    for ipa_char, cyr_char in ipa_to_cyr.items():
-        if ipa_char in result:
-            result = result.replace(ipa_char, cyr_char)
+    result = []
+    for char in phoneme_str:
+        result.append(phoneme_to_cyr.get(char, char))
+    
+    cyrillic = ''.join(result)
     
     # Видаляємо зайві символи
-    result = re.sub(r'[ˈˌː]', '', result)
+    cyrillic = re.sub(r'[ˈˌː]', '', cyrillic)
     
-    return result if result else auto_transcribe(ipa_text)
+    return cyrillic if cyrillic and cyrillic != phoneme_str else auto_transcribe(''.join(phonemes))
 
 def auto_transcribe(word):
     """Автоматична транскрипція як резервний варіант"""
-    # Спрощені правила
+    # Покращені правила вимови
     rules = [
+        # Сполучення приголосних
         (r'th', 'с'), (r'ch', 'ч'), (r'sh', 'ш'), (r'ph', 'ф'),
         (r'wh', 'в'), (r'ck', 'к'), (r'ng', 'нг'), (r'qu', 'кв'),
-        (r'ee', 'і'), (r'ea', 'і'), (r'oo', 'у'), (r'oa', 'оу'),
+        (r'gh', 'г'), (r'rh', 'р'), (r'kn', 'н'), (r'wr', 'р'),
+        (r'psy', 'сай'), (r'pn', 'н'), (r'ps', 'с'),
+        
+        # Голосні комбінації
+        (r'augh', 'оф'), (r'ough', 'оф'), (r'eigh', 'ей'), (r'igh', 'ай'),
+        (r'oi', 'ой'), (r'oy', 'ой'), (r'ou', 'ау'), (r'ow', 'ау'),
+        (r'ea', 'і'), (r'ee', 'і'), (r'oo', 'у'), (r'oa', 'оу'),
         (r'ai', 'ей'), (r'ay', 'ей'), (r'ei', 'ей'), (r'ey', 'ей'),
-        (r'tion', 'шен'), (r'sion', 'жен'), (r'ing', 'інг'),
+        (r'ie', 'і'), (r'ue', 'у'), (r'ui', 'у'), (r'ae', 'е'), (r'oe', 'і'),
+        
+        # Кінцівки
+        (r'tion$', 'шен'), (r'sion$', 'жен'), (r'cian$', 'шен'),
+        (r'cious$', 'шес'), (r'tious$', 'шес'), (r'cial$', 'шел'),
+        (r'tial$', 'шел'), (r'able$', 'ейбл'), (r'ible$', 'ібл'),
+        (r'ful$', 'фул'), (r'less$', 'лес'), (r'ness$', 'нес'),
+        (r'ment$', 'мент'), (r'ing$', 'інг'), (r'ed$', 'ед'),
+        (r'er$', 'ер'), (r'est$', 'ест'), (r'ly$', 'лі')
     ]
     
     result = word.lower()
+    
+    # Застосовуємо правила у правильному порядку
     for pattern, replacement in rules:
         result = re.sub(pattern, replacement, result)
     
-    # Базові звуки
+    # Базові голосні (після всіх комбінацій)
     result = re.sub(r'a', 'е', result)
     result = re.sub(r'e', 'і', result)
     result = re.sub(r'i', 'ай', result)
@@ -187,12 +213,23 @@ def auto_transcribe(word):
     result = re.sub(r'u', 'у', result)
     result = re.sub(r'y', 'і', result)
     
+    # Базові приголосні
+    consonants = {
+        'b': 'б', 'c': 'к', 'd': 'д', 'f': 'ф', 'g': 'г', 'h': 'х',
+        'j': 'дж', 'k': 'к', 'l': 'л', 'm': 'м', 'n': 'н', 'p': 'п',
+        'q': 'к', 'r': 'р', 's': 'с', 't': 'т', 'v': 'в', 'w': 'в',
+        'x': 'кс', 'z': 'з'
+    }
+    
+    for eng, ukr in consonants.items():
+        result = result.replace(eng, ukr)
+    
     return result
 
 # Команда /start
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user = update.effective_user
-    ipa_status = "✅ увімкнено" if IPA_AVAILABLE else "❌ вимкнено"
+    g2p_status = "✅ увімкнено" if G2P_AVAILABLE else "❌ вимкнено"
     
     welcome_text = f"""
 👋 Привіт, {user.first_name}!
@@ -201,33 +238,52 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 🎯 Надішліть англійське слово і я:
 • 🔊 Покажу **вимову** українськими буквами
-• 📝 Покажу **IPA транскрипцію** (міжнародну)
+• 🌐 Надам **переклад** українською
+• 📝 Покажу **фонетичну транскрипцію**
 • 📚 Використаю базу з **{len(WORD_DATABASE)}** слів
 
 🔧 **Стан системи:**
-• IPA транскрипція: {ipa_status}
+• Фонетичний аналіз: {g2p_status}
 
 🔊 **Приклади:**
-• `hello` → `хелоу` /həˈloʊ/ 
-• `computer` → `комп'ютер` /kəmˈpjutər/ 
-• `thanks` → `сенкс` /θæŋks/ 
+• `hello` → `хелоу` [h ə l ˈoʊ] (привіт)
+• `computer` → `комп'ютер` [k ə m ˈp j u t ər] (комп'ютер)
+• `thanks` → `сенкс` [θ æ ŋ k s] (дякую)
+
 💡 **Спробуйте ці слова для тесту:**
 cat, water, family, beautiful, question
 
+Напиши слово і спробуй! 🎯
     """
     await update.message.reply_text(welcome_text)
 
 # Команда /help
 async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    ipa_status = "✅ доступна" if IPA_AVAILABLE else "❌ недоступна"
+    g2p_status = "✅ доступний" if G2P_AVAILABLE else "❌ недоступний"
     
     help_text = f"""
 📖 **Довідка по боту:**
 
 🎯 **Точна транскрипція:**
-• Використовую **IPA** (International Phonetic Alphabet)
-• Конвертую IPA в кириличну вимову
+• Використовую **g2p-en** для фонетичного аналізу
+• Конвертую фонеми в кириличну вимову
 • База з {len(WORD_DATABASE)} слів з точними транскрипціями
+
+🔧 **Технології:**
+• Фонетичний аналіз: {g2p_status}
+• Автоматична конвертація: ✅ увімкнено
+• Резервна транскрипція: ✅ увімкнено
+
+📊 **Що таке фонеми?**
+Це мовні звуки, які точно описують вимову.
+Наприклад: 
+• `θ` - звук "th" як в "think"
+• `ʃ` - звук "sh" як в "ship"  
+• `ŋ` - звук "ng" як в "sing"
+
+⚠️ **Обмеження:**
+• Деякі складні слова можуть мати неточну транскрипцію
+• Фонеми працюють тільки для англійських слів
 
 💡 **Порада:** Використовуйте /stats для деталей
     """
@@ -236,15 +292,26 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 # Команда /stats
 async def stats_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     total_words = len(WORD_DATABASE)
-    ipa_status = "🟢 працює" if IPA_AVAILABLE else "🔴 не працює"
+    g2p_status = "🟢 працює" if G2P_AVAILABLE else "🔴 не працює"
     
     stats_text = f"""
 📊 **Статистика системи:**
 
 • Слів у базі: **{total_words}**
-• IPA транскрипція: **{ipa_status}**
-• Методи транскрипції: база даних, IPA, автоматична
+• Фонетичний аналіз: **{g2p_status}**
+• Методи транскрипції: база даних, фонетична, автоматична
 
+🔧 **Технічна інформація:**
+• Хостинг: Railway
+• Бібліотека: python-telegram-bot + g2p-en
+• Мова: Python 3.9
+
+💡 **Як це працює:**
+1. Перевірка в базі даних
+2. Фонетичний аналіз g2p-en (якщо доступний)  
+3. Автоматична транскрипція (резерв)
+
+Система працює стабільно! 🚀
 """
     await update.message.reply_text(stats_text)
 
@@ -264,7 +331,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return
     
     # Отримуємо точну транскрипцію
-    pronunciation, translation, ipa_text, method = get_accurate_pronunciation(user_message)
+    pronunciation, translation, phonemes_text, method = get_accurate_pronunciation(user_message)
     
     # Формуємо відповідь
     response = f"""
@@ -273,17 +340,17 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
 🌐 **Переклад:** `{translation}`
 """
     
-    # Додаємо IPA якщо є
-    if ipa_text:
-        response += f"📝 **IPA:** `/{ipa_text}/`\n"
+    # Додаємо фонеми якщо є
+    if phonemes_text:
+        response += f"📝 **Фонеми:** `[{phonemes_text}]`\n"
     
     response += f"🎯 **Метод:** {method}\n"
 
     # Додаткові нотатки
     if method == "база даних":
         response += "💡 *Точна транскрипція з перевіреної бази*"
-    elif method == "IPA транскрипція":
-        response += "💡 *Точна фонетична транскрипція через IPA*"
+    elif method == "фонетична транскрипція":
+        response += "💡 *Точна фонетична транскрипція через g2p-en*"
     else:
         response += "💡 *Автоматична транскрипція - слово відсутнє в базі*"
     
@@ -309,8 +376,8 @@ def main():
     application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
     application.add_error_handler(error_handler)
     
-    logger.info("🚀 Бот з IPA транскрипцією запускається...")
-    logger.info(f"📊 База: {len(WORD_DATABASE)} слів, IPA: {IPA_AVAILABLE}")
+    logger.info("🚀 Бот з фонетичною транскрипцією запускається...")
+    logger.info(f"📊 База: {len(WORD_DATABASE)} слів, G2P: {G2P_AVAILABLE}")
     application.run_polling()
 
 if __name__ == "__main__":
