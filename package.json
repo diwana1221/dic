@@ -1,12 +1,12 @@
 {
-  "name": "telegram-pronunciation-bot",
+  "name": "telegram-ipa-bot",
   "version": "1.0.0",
-  "description": "Telegram bot for English pronunciation and translation",
+  "description": "Telegram bot with accurate IPA transcription",
   "main": "bot.py",
   "scripts": {
     "start": "python bot.py"
   },
-  "keywords": ["telegram", "bot", "pronunciation", "translation"],
+  "keywords": ["telegram", "bot", "ipa", "pronunciation", "phonetic"],
   "author": "Your Name",
   "license": "MIT"
 }
